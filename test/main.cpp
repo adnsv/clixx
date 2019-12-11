@@ -1,14 +1,13 @@
 #include "../cli++.h"
-#include "../usage.h"
 #include <cstdlib>
 
-auto main() -> int {
-
-    bool show_help;
-    bool verbose;
+auto main() -> int
+{
+    std::optional<bool> show_help;
+    std::optional<bool> verbose;
     std::string filename;
 
-    auto cl = cli::command{"usage header"};
+    auto cl = cli::app{"App Description"};
     cl.options = {
         cli::option{show_help, "help", "h?", "display help info"},
         cli::option{verbose, "verbose", "v", "show detailed info"},
@@ -16,8 +15,14 @@ auto main() -> int {
     cl.arguments = {
         cli::argument{filename, "FILENAME", "load filename"},
     };
+    cl.subcommand("info", "show information", [](cli::command& cmd) {
+        std::optional<bool> detailed;
+        cmd.options = {
+            cli::option{detailed, "", "d", "show detailed info"},
+        };
+    });
 
-    auto s = cli::print_usage("TEST ", cl);
+    auto s = cl.usage("EXENAME");
     printf(s.c_str());
 
     return 0;
