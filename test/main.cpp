@@ -3,27 +3,30 @@
 
 auto main() -> int
 {
-    std::optional<bool> show_help;
     std::optional<bool> verbose;
     std::string filename;
 
-    auto cl = cli::app{"App Description"};
-    cl.options = {
-        cli::option{show_help, "help", "h?", "display help info"},
-        cli::option{verbose, "verbose", "v", "show detailed info"},
-    };
-    cl.arguments = {
-        cli::argument{filename, "FILENAME", "load filename"},
-    };
+    auto cl = cli::app{{}, "App Description"};
+
     cl.subcommand("info", "show information", [](cli::command& cmd) {
         std::optional<bool> detailed;
-        cmd.options = {
-            cli::option{detailed, "", "d", "show detailed info"},
-        };
+        cmd.flag(detailed, "", "d", "show detailed info");
+        cmd.action = []() { printf("executing info command\n"); };
     });
 
-    auto s = cl.usage("EXENAME");
-    printf(s.c_str());
+    cl.flag(verbose, "verbose", "v", "show detailed info");
+    cl.arg(filename, "FILENAME", "load filename");
+    cl.action = []() { printf("executing root command\n"); };
+
+    try {
+        cl.execute({"EXENAME.exe", "info"});
+    }
+    catch (const cli::help& msg) {
+        printf("%s\n", msg.what());
+    }
+    catch (const cli::error& msg) {
+        printf("error: %s\n", msg.what());
+    }
 
     return 0;
 }
