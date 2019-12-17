@@ -69,7 +69,7 @@ protected:
             return s.size() == 1 && letters.find(s[0]) != std::string::npos;
     }
     friend class command;
-    friend class flag_list;
+    friend struct flag_list;
 };
 
 struct flag_list {
@@ -324,7 +324,7 @@ inline auto flag_list::syntax(bool show_samples) const
 
 inline auto flag_list::find(std::string_view s, bool as_letter) -> flag*
 {
-    for (auto it : items) {
+    for (auto& it : items) {
         if (auto fl = std::get_if<flag_list>(&it)) {
             if (auto f = fl->find(s, as_letter))
                 return f;

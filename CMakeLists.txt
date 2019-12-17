@@ -2,11 +2,14 @@ cmake_minimum_required(VERSION 3.15)
 
 project (cli++)
 
-set (CMAKE_CXX_STANDARD 20)
+set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library (cli++ INTERFACE)
 
 target_include_directories (cli++ INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_subdirectory (test)
+option (BUILD_CLIXX_TEST "Build cli++ test" OFF)
+if (BUILD_CLIXX_TEST)
+    add_subdirectory (test)
+endif (BUILD_CLIXX_TEST)
