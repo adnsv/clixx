@@ -237,6 +237,8 @@ public:
         execute(args.data(), args.data() + args.size());
     }
 
+    auto exe_path() const -> const std::filesystem::path& { return executable_path; }
+
 protected:
     std::filesystem::path
         executable_path; // obtained from the first command line parameter
