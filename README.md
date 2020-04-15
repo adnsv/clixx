@@ -102,7 +102,7 @@ the executable.
 
 For example:
 
-- `mygit`: executes root command
+- `myexe`: executes root command
 - `myexe add`: executes "add" command
 - `myexe submodule add`: executes "submodule" command with "add" subcommand
 ```
