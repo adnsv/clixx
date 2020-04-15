@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
 #include <algorithm>
+#include <string>
+#include <string_view>
 #include <vector>
 
 namespace cli {
@@ -14,7 +15,6 @@ struct writer {
 
     auto put_white(size_t n)
     {
-        static constexpr auto sp16 = std::string_view{"                "};
         while (n >= 16) {
             put(sp16);
             --n;
@@ -70,6 +70,8 @@ struct writer {
     }
 
 private:
+    inline static std::string_view sp16 = "                ";
+
     auto calc_width(std::string_view sv) -> size_t
     {
         // todo: cell widths

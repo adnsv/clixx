@@ -3,12 +3,15 @@
 
 auto main() -> int
 {
+    // declare storage for flags and arguments accessible by all commands and
+    // subcommands
     std::optional<bool> verbose;
     std::string filename;
 
-    auto cl = cli::app{{}, "App Description"};
+    auto cl = cli::app{"App Description"};
 
     cl.subcommand("info", "show information", [](cli::command& cmd) {
+        // declare parameter storage accessible by "info" subcommand
         std::optional<bool> detailed;
         cmd.flag(detailed, "", "d", "show detailed info");
         cmd.action = []() { printf("executing info command\n"); };

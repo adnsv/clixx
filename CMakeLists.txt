@@ -9,4 +9,14 @@ add_library (cli++ INTERFACE)
 
 target_include_directories (cli++ INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_subdirectory (test)
+if (WIN32)
+    option (BUILD_CLIXX_WINMAIN_STARTER "Build cli++ test" ON)
+    if (BUILD_CLIXX_WINMAIN_STARTER)
+        add_subdirectory ("internal/winmain-starter")
+    endif (BUILD_CLIXX_WINMAIN_STARTER)
+endif (WIN32)
+
+option (BUILD_CLIXX_TEST "Build cli++ test" ON)
+if (BUILD_CLIXX_TEST)
+    add_subdirectory ("test")
+endif (BUILD_CLIXX_TEST)

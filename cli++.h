@@ -21,8 +21,8 @@ struct flag {
     std::string sample;
     std::string desc;
 
-    flag(const target& t, const std::string& name, const std::string& letters,
-        const std::string& desc, const std::string& sample = {})
+    flag(target const& t, std::string const& name, std::string const& letters,
+        std::string const& desc, std::string const& sample = {})
         : t{t}
         , name{name}
         , letters{letters}
@@ -79,9 +79,9 @@ struct flag_list {
     bool exclusive = false; // at most one of the flags has to be used
 
     flag_list() = default;
-    flag_list(const flag_list&) = default;
+    flag_list(flag_list const&) = default;
 
-    auto operator=(const flag_list&) -> flag_list& = default;
+    auto operator=(flag_list const&) -> flag_list& = default;
     auto operator=(std::initializer_list<item> new_items) -> flag_list
     {
         items = new_items;
@@ -113,7 +113,7 @@ struct argument {
     }
 
 protected:
-    argument(const target& t, const std::string& name, const std::string& desc)
+    argument(target const& t, std::string const& name, std::string const& desc)
         : t{t}
         , name{name}
         , desc{desc}
@@ -132,22 +132,20 @@ public:
     std::vector<argument> arguments;
     std::function<void()> action;
 
-    auto subcommand(const std::string& name, const std::string& desc,
-        subcmd_callback callback)
+    auto subcommand(std::string const& name, std::string const& desc, subcmd_callback callback)
     {
         subcommands.push_back(subcmd{name, desc, callback});
     }
 
-    void flag(const target& t, const std::string& name,
-        const std::string& letters, const std::string& desc,
-        const std::string& sample = {})
+    void flag(target const& t, std::string const& name, std::string const& letters,
+        std::string const& desc, std::string const& sample = {})
     {
         flags.items.push_back(cli::flag{t, name, letters, desc, sample});
     }
 
     // todo: add function that constructs flag lists
 
-    void arg(const target& t, const std::string& name, const std::string& desc)
+    void arg(target const& t, std::string const& name, std::string const& desc)
     {
         arguments.push_back(argument{t, name, desc});
     }
@@ -162,7 +160,7 @@ protected:
     std::vector<subcmd> subcommands;
     command* parent_cmd = nullptr; // link to a parent command
 
-    void exec(const std::string_view* first, const std::string_view* last);
+    void exec(std::string_view const* first, std::string_view const* last);
 
     auto find_flag(std::string_view s, bool as_letter) -> cli::flag*
     {
@@ -178,17 +176,16 @@ protected:
     }
 
     auto trace_usage(                  //
-        const std::string& exe_prefix, // executable command name
-        const std::string& cmd_prefix, // parent command chain (if any)
-        const std::string& help_cmd,   // a command (or flag) for usage help
-        const std::string_view* first, // command line arguments
-        const std::string_view* last) -> std::string;
+        std::string const& exe_prefix, // executable command name
+        std::string const& cmd_prefix, // parent command chain (if any)
+        std::string const& help_cmd,   // a command (or flag) for usage help
+        std::string_view const* first, // command line arguments
+        std::string_view const* last) -> std::string;
 
-    auto usage(const std::string& exe_prefix, const std::string& cmd_prefix,
-        const std::string& help_cmd) const -> std::string;
+    auto usage(std::string const& exe_prefix, std::string const& cmd_prefix,
+        std::string const& help_cmd) const -> std::string;
 
-    void collect_arguments(
-        const std::string_view* first, const std::string_view* last);
+    void collect_arguments(std::string_view const* first, std::string_view const* last);
 };
 
 // app is the root command
@@ -199,13 +196,19 @@ public:
     std::string help_cmd = {};
     std::string help_flag = "--help";
 
-    app(const std::string& name, const std::string& desc)
+    app(std::string const& desc)
+        : name{}
+        , desc{desc}
+    {
+    }
+
+    app(std::string const& name, std::string const& desc)
         : name{name}
         , desc{desc}
     {
     }
 
-    void execute(const std::string_view* first, const std::string_view* last);
+    void execute(std::string_view const* first, std::string_view const* last);
 
     void execute(std::initializer_list<std::string_view> cmdline)
     {
@@ -238,23 +241,22 @@ public:
     }
 
 protected:
-    std::filesystem::path
-        executable_path; // obtained from the first command line parameter
+    std::filesystem::path executable_path; // obtained from the first command line parameter
 };
 
-namespace {
+namespace internal {
 
-inline auto wrap_brackets(const std::string& s) -> std::string
+inline auto wrap_brackets(std::string const& s) -> std::string
 {
     return std::string{"["} + s + "]";
 }
 
-inline auto wrap_parenthesis(const std::string& s) -> std::string
+inline auto wrap_parenthesis(std::string const& s) -> std::string
 {
     return std::string{"("} + s + ")";
 }
 
-inline void desc(writer& w, const flag& f)
+inline void desc(writer& w, flag const& f)
 {
     auto s = std::string{};
     if (!f.name.empty())
@@ -268,7 +270,7 @@ inline void desc(writer& w, const flag& f)
     w.cols({s, f.desc});
 }
 
-inline void desc(writer& w, const flag_list& ol)
+inline void desc(writer& w, flag_list const& ol)
 {
     for (auto& it : ol.items)
         if (auto v = std::get_if<flag_list>(&it))
@@ -277,10 +279,9 @@ inline void desc(writer& w, const flag_list& ol)
             desc(w, *v);
 }
 
-} // namespace
+} // namespace internal
 
-inline auto flag_list::syntax(bool show_samples) const
-    -> std::vector<std::string>
+inline auto flag_list::syntax(bool show_samples) const -> std::vector<std::string>
 {
     auto ret = std::vector<std::string>{};
     for (auto& it : items) {
@@ -311,7 +312,7 @@ inline auto flag_list::syntax(bool show_samples) const
             auto s = f->syntax(show_samples);
             auto show_as_required = f->t.required && !this->exclusive;
             if (!show_as_required)
-                s = wrap_brackets(s);
+                s = internal::wrap_brackets(s);
             ret.push_back(s);
         }
     }
@@ -342,8 +343,8 @@ inline auto flag_list::validate() -> bool
     // returns true any of the contained flags is in use
     // throws when required flags are missing, when
     // exclusivity is violated, and other logical error.
-    auto unused_but_required = std::vector<const item*>{};
-    auto used = std::vector<const item*>{};
+    auto unused_but_required = std::vector<item const*>{};
+    auto used = std::vector<item const*>{};
 
     for (auto it : items) {
         if (auto fl = std::get_if<flag_list>(&it)) {
@@ -358,7 +359,7 @@ inline auto flag_list::validate() -> bool
         }
     }
 
-    auto as_str = [](const item* it) -> std::string {
+    auto as_str = [](item const* it) -> std::string {
         auto ret = std::string{};
         if (auto fl = std::get_if<flag_list>(it)) {
             for (auto& s : fl->syntax(false)) {
@@ -366,7 +367,7 @@ inline auto flag_list::validate() -> bool
                 ret += s;
             }
             if (fl->exclusive)
-                ret = wrap_parenthesis(ret);
+                ret = internal::wrap_parenthesis(ret);
         }
         else if (auto f = std::get_if<flag>(it)) {
             ret += ' ';
@@ -397,9 +398,8 @@ inline auto flag_list::validate() -> bool
     return !used.empty();
 }
 
-inline auto command::usage(const std::string& exe_prefix,
-    const std::string& cmd_prefix, const std::string& help_cmd) const
-    -> std::string
+inline auto command::usage(std::string const& exe_prefix, std::string const& cmd_prefix,
+    std::string const& help_cmd) const -> std::string
 {
     auto w = writer{};
 
@@ -427,7 +427,7 @@ inline auto command::usage(const std::string& exe_prefix,
 
     if (!flags.items.empty()) {
         w.line("\nflags:");
-        desc(w, flags);
+        internal::desc(w, flags);
         w.done_cols("    ", "  ");
     }
 
@@ -438,7 +438,7 @@ inline auto command::usage(const std::string& exe_prefix,
         w.line("\nparent flags:");
         while (cmd) {
             if (!cmd->flags.items.empty())
-                desc(w, cmd->flags);
+                internal::desc(w, cmd->flags);
             cmd = cmd->parent_cmd;
         }
         w.done_cols("    ", "  ");
@@ -461,8 +461,7 @@ inline auto command::usage(const std::string& exe_prefix,
     return w.buf;
 }
 
-inline void command::exec(
-    const std::string_view* first, const std::string_view* last)
+inline void command::exec(std::string_view const* first, std::string_view const* last)
 {
     // arg_strings collects all free-standing arguments
     auto arg_strings = std::vector<std::string_view>{};
@@ -510,16 +509,12 @@ inline void command::exec(
             if (!f->t.is_bool()) {
                 // string flag
                 if (!foldings.empty())
-                    throw error{
-                        std::string(
-                            "unsupported folding on non-boolean flag ") +
-                        used_as};
+                    throw error{std::string("unsupported folding on non-boolean flag ") + used_as};
                 auto value = std::string_view{};
                 if (eqpos != std::string_view::npos) {
                     // handle: --flag=value
                     value = sv.substr(eqpos + 1);
-                    if (value.size() >= 2 && value.front() == '"' &&
-                        value.back() == '"') {
+                    if (value.size() >= 2 && value.front() == '"' && value.back() == '"') {
                         // unquote: --flag="value"
                         value = value.substr(1, value.size() - 1);
                     }
@@ -529,10 +524,7 @@ inline void command::exec(
                     if (first != last)
                         value = *first++;
                     else
-                        throw error{
-                            std::string(
-                                "missing required parameter for flag ") +
-                            used_as};
+                        throw error{std::string("missing required parameter for flag ") + used_as};
                 }
                 if (f->used() && !f->t.is_vector())
                     throw error{"duplicate flag " + used_as};
@@ -549,8 +541,7 @@ inline void command::exec(
                     else if (sv.substr(eqpos + 1) == "false")
                         value = false;
                     else
-                        throw error{
-                            "unsupported boolean value for flag " + used_as};
+                        throw error{"unsupported boolean value for flag " + used_as};
                 }
                 if (f->used())
                     throw error{"duplicate flag " + used_as};
@@ -587,20 +578,17 @@ inline void command::exec(
         cmd = cmd->parent_cmd;
     }
 
-    collect_arguments(
-        arg_strings.data(), arg_strings.data() + arg_strings.size());
+    collect_arguments(arg_strings.data(), arg_strings.data() + arg_strings.size());
 
     if (action)
         action();
 }
 
-void command::collect_arguments(
-    const std::string_view* first, const std::string_view* last)
+void command::collect_arguments(std::string_view const* first, std::string_view const* last)
 {
     if (arguments.empty()) {
         if (first != last)
-            throw error{
-                std::string{"unexpected argument: "} + std::string{*first}};
+            throw error{std::string{"unexpected argument: "} + std::string{*first}};
         return;
     }
     auto b = arguments.begin();
@@ -643,11 +631,11 @@ void command::collect_arguments(
 }
 
 inline auto command::trace_usage(  //
-    const std::string& exe_prefix, // executable command name
-    const std::string& cmd_prefix, // parent command chain (if any)
-    const std::string& help_cmd,   // a command (or flag) for usage help
-    const std::string_view* first, // command line arguments
-    const std::string_view* last) -> std::string
+    std::string const& exe_prefix, // executable command name
+    std::string const& cmd_prefix, // parent command chain (if any)
+    std::string const& help_cmd,   // a command (or flag) for usage help
+    std::string_view const* first, // command line arguments
+    std::string_view const* last) -> std::string
 {
     if (first != last)
         // do we have a subcommand?
@@ -657,15 +645,14 @@ inline auto command::trace_usage(  //
                 cmd.parent_cmd = this;
                 if (sub.callback)
                     sub.callback(cmd);
-                return cmd.trace_usage(exe_prefix, cmd_prefix + " " + sub.name,
-                    help_cmd, first + 1, last);
+                return cmd.trace_usage(
+                    exe_prefix, cmd_prefix + " " + sub.name, help_cmd, first + 1, last);
             }
 
     return usage(exe_prefix, cmd_prefix, help_cmd);
 }
 
-inline void app::execute(
-    const std::string_view* first, const std::string_view* last)
+inline void app::execute(std::string_view const* first, std::string_view const* last)
 {
     if (first != last) {
         executable_path = *first++;
@@ -691,7 +678,8 @@ inline void app::execute(
         if (!msg.empty())
             msg += '\n';
         auto h = help_cmd;
-        if (h.empty()) h = help_flag;
+        if (h.empty())
+            h = help_flag;
         msg += trace_usage(name, "", h, first, last);
         throw help{msg};
     }
