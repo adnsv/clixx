@@ -12,7 +12,7 @@ target_include_directories (cli++ INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 if (WIN32)
     option (CLIXX_BUILD_WINMAIN_STARTER "Build cli++ WinMain starter" ON)
     if (CLIXX_BUILD_WINMAIN_STARTER)
-        add_subdirectory ("internal/winmain-starter")
+        add_library (winmain-starter STATIC "winmain-starter/winmain-starter.cpp")
     endif (CLIXX_BUILD_WINMAIN_STARTER)
 endif (WIN32)
 
