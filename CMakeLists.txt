@@ -16,7 +16,7 @@ if (WIN32)
     endif (CLIXX_BUILD_WINMAIN_STARTER)
 endif (WIN32)
 
-option (CLIXX_BUILD_TEST "Build cli++ test" ON)
+option (CLIXX_BUILD_TEST "Build cli++ test" OFF)
 if (CLIXX_BUILD_TEST)
     add_subdirectory ("test")
 endif (CLIXX_BUILD_TEST)
