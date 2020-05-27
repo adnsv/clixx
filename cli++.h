@@ -611,10 +611,12 @@ void command::collect_arguments(std::string_view const* first, std::string_view 
         b->t.write(*last);
     }
     while (b != e && !b->t.required && !b->t.is_vector()) {
-        if (first != last) {
-            b->t.write(*first);
+        if (first == last) {
             ++b;
+            continue;
         }
+        b->t.write(*first);
+        ++b;
         ++first;
     }
     if (b != e && b->t.is_vector()) {
