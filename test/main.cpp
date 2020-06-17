@@ -12,7 +12,7 @@ auto main() -> int
 
     cl.subcommand("info", "show information", [](cli::command& cmd) {
         // declare parameter storage accessible by "info" subcommand
-        std::optional<bool> detailed;
+        static std::optional<bool> detailed;
         cmd.flag(detailed, "", "d", "show detailed info");
         cmd.action = []() { printf("executing info command\n"); };
     });
