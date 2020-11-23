@@ -178,12 +178,13 @@ protected:
     auto trace_usage(                  //
         std::string const& exe_prefix, // executable command name
         std::string const& cmd_prefix, // parent command chain (if any)
+        std::string const& cmd_desc,
         std::string const& help_cmd,   // a command (or flag) for usage help
         std::string_view const* first, // command line arguments
         std::string_view const* last) -> std::string;
 
     auto usage(std::string const& exe_prefix, std::string const& cmd_prefix,
-        std::string const& help_cmd) const -> std::string;
+        std::string const& desc, std::string const& help_cmd) const -> std::string;
 
     void collect_arguments(std::string_view const* first, std::string_view const* last);
 };
@@ -400,8 +401,26 @@ inline auto flag_list::validate() -> bool
     return !used.empty();
 }
 
+inline auto extract_short(std::string_view desc) -> std::string_view
+{
+    auto nl = desc.find('\n');
+    if (nl != std::string_view::npos)
+        return desc.substr(0, nl);
+    else
+        return desc;
+}
+
+inline auto extract_long(std::string_view desc) -> std::string_view
+{
+    auto nl = desc.find('\n');
+    if (nl != std::string_view::npos)
+        return desc.substr(nl+1);
+    else
+        return desc;
+}
+
 inline auto command::usage(std::string const& exe_prefix, std::string const& cmd_prefix,
-    std::string const& help_cmd) const -> std::string
+    std::string const& desc, std::string const& help_cmd) const -> std::string
 {
     auto w = writer{};
 
@@ -414,16 +433,22 @@ inline auto command::usage(std::string const& exe_prefix, std::string const& cmd
     for (auto& arg : arguments)
         parts.push_back(arg.syntax());
 
-    auto s = exe_prefix;
+    auto s = exe_prefix + cmd_prefix;
     for (auto& part : parts)
         s += " " + part;
     w.line("\nsyntax:");
     w.line(std::string("    ") + s);
 
+    if (!desc.empty()) {
+        w.line("");
+        w.line(extract_long(desc));
+        w.line("\n");
+    }
+
     if (!subcommands.empty()) {
         w.line("\ncommands:");
         for (auto& sc : subcommands)
-            w.cols({sc.name, sc.desc});
+            w.cols({sc.name, extract_short(sc.desc)});
         w.done_cols("    ", "  ");
     }
 
@@ -454,7 +479,7 @@ inline auto command::usage(std::string const& exe_prefix, std::string const& cmd
     }
 
     if (!subcommands.empty() && !help_cmd.empty()) {
-        w.line("\nuse '" + exe_prefix + help_cmd + cmd_prefix +
+        w.line("\nuse '" + exe_prefix + " " + help_cmd + cmd_prefix +
                " <command>' for more information about a command.");
     }
 
@@ -637,6 +662,7 @@ void command::collect_arguments(std::string_view const* first, std::string_view 
 inline auto command::trace_usage(  //
     std::string const& exe_prefix, // executable command name
     std::string const& cmd_prefix, // parent command chain (if any)
+    std::string const& cmd_desc,
     std::string const& help_cmd,   // a command (or flag) for usage help
     std::string_view const* first, // command line arguments
     std::string_view const* last) -> std::string
@@ -650,10 +676,10 @@ inline auto command::trace_usage(  //
                 if (sub.callback)
                     sub.callback(cmd);
                 return cmd.trace_usage(
-                    exe_prefix, cmd_prefix + " " + sub.name, help_cmd, first + 1, last);
+                    exe_prefix, cmd_prefix + " " + sub.name, sub.desc, help_cmd, first + 1, last);
             }
 
-    return usage(exe_prefix, cmd_prefix, help_cmd);
+    return usage(exe_prefix, cmd_prefix, cmd_desc, help_cmd);
 }
 
 inline void app::execute(std::string_view const* first, std::string_view const* last)
@@ -684,7 +710,7 @@ inline void app::execute(std::string_view const* first, std::string_view const* 
         auto h = help_cmd;
         if (h.empty())
             h = help_flag;
-        msg += trace_usage(name, "", h, first, last);
+        msg += trace_usage(name, "", "", h, first, last);
         throw help{msg};
     }
 

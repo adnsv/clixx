@@ -28,9 +28,9 @@ struct writer {
         buf += "\n";
     }
 
-    auto cols(std::initializer_list<std::string> cells)
+    auto cols(std::initializer_list<std::string_view> cells)
     {
-        rows.emplace_back(cells);
+        rows.push_back({cells.begin(), cells.end()});
     }
 
     auto done_cols(std::string_view prefix = {}, std::string_view colsep = {})
