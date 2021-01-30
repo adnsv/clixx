@@ -525,11 +525,11 @@ inline void command::exec(std::string_view const* first, std::string_view const*
         }
         else if (sv.size() > 1 && sv[0] == '-') {
             // a single flag or a folding of boolean flags
-            f = find_flag(sv.substr(1, 2), true); // first one in a sequence
+            f = find_flag(sv.substr(1, 1), true); // first one in a sequence
             used_as = sv.substr(0, 2);
             if (!f)
                 throw error{std::string{"unsupported flag "} + used_as};
-            foldings = sv.substr(2, eqpos); // the rest of them foldings, if any
+            foldings = sv.substr(2, eqpos-2); // the rest of them foldings, if any
         }
 
         if (f) {
