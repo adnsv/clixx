@@ -6,9 +6,9 @@
 #include <string_view>
 #include <vector>
 
-#include "internal/error.h"
-#include "internal/target.h"
-#include "internal/writer.h"
+#include "internal/error.hpp"
+#include "internal/target.hpp"
+#include "internal/writer.hpp"
 
 namespace cli {
 
