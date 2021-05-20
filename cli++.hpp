@@ -442,7 +442,7 @@ inline auto command::usage(std::string const& exe_prefix, std::string const& cmd
     if (!desc.empty()) {
         w.line("");
         w.line(extract_long(desc));
-        w.line("\n");
+        w.line("");
     }
 
     if (!subcommands.empty()) {
