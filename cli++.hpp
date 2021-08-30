@@ -349,7 +349,7 @@ inline auto flag_list::validate() -> bool
     auto unused_but_required = std::vector<item const*>{};
     auto used = std::vector<item const*>{};
 
-    for (auto it : items) {
+    for (auto& it : items) {
         if (auto fl = std::get_if<flag_list>(&it)) {
             if (fl->validate())
                 used.push_back(&it);
@@ -518,7 +518,7 @@ inline void command::exec(std::string_view const* first, std::string_view const*
 
         if (sv.size() > 2 && sv[0] == '-' && sv[1] == '-') {
             // long name flag
-            f = find_flag(sv.substr(2, eqpos), false);
+            f = find_flag(sv.substr(2, eqpos - 2), false);
             used_as = sv;
             if (!f)
                 throw error{std::string{"unsupported flag "} + used_as};
