@@ -611,7 +611,7 @@ inline void command::exec(std::string_view const* first, std::string_view const*
         action();
 }
 
-void command::collect_arguments(std::string_view const* first, std::string_view const* last)
+inline void command::collect_arguments(std::string_view const* first, std::string_view const* last)
 {
     if (arguments.empty()) {
         if (first != last)
