@@ -379,7 +379,7 @@ inline auto flag_list::validate() -> bool
         return ret;
     };
 
-    if (unused_but_required.size() > 1) {
+    if (unused_but_required.size() > 0) {
         auto err_msg = std::string{"missing required flags:"};
         for (auto& it : unused_but_required)
             err_msg += as_str(it);
